@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import functools
-import sys
+import pickle
 import time
 
 
@@ -17,9 +17,7 @@ def cache(ttl, typed=False, ignore_error=False):
         def fn_wrapped(*args, **kwargs):
             result = _tmp  # fake identifier
             now = time.monotonic()
-            key = args
-            if kwargs:
-                key += tuple(sorted(kwargs.items()))
+            key = pickle.dumps(args) + pickle.dumps(kwargs)
             if key in _tmp:
                 cd, result = _tmp[key]
                 if cd > now:
@@ -56,6 +54,15 @@ if __name__ == '__main__':
     @cache(10, ignore_error=True)
     def test_3():
         pass
+    @cache(1)
+    def test(*args, **kwargs):
+        print(test, args, kwargs)
+    test(9, z=99)
+    time.sleep(0)
+    test(9, z=99)  # cached
+    time.sleep(1)
+    test(9, z=99)
 else:
-    self = sys.modules[__name__]
-    sys.modules[__name__] = self.cache
+    from sys import modules
+    self = modules[__name__]
+    modules[__name__] = self.cache
