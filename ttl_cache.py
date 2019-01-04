@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import functools
-import pickle
-import time
 
 
 def cache(ttl, typed=False, ignore_error=False):
@@ -11,13 +9,16 @@ def cache(ttl, typed=False, ignore_error=False):
     """
 
     def wrap(fn):
+        from pickle import dumps
+        from time import monotonic
+        hash = lambda x: x and dumps(x) or b''
         _tmp = {}
 
         @functools.wraps(fn)
         def fn_wrapped(*args, **kwargs):
             result = _tmp  # fake identifier
-            now = time.monotonic()
-            key = pickle.dumps(args) + pickle.dumps(kwargs)
+            now = monotonic()
+            key = hash(args) + hash(kwargs)
             if key in _tmp:
                 cd, result = _tmp[key]
                 if cd > now:
@@ -45,6 +46,7 @@ def cache(ttl, typed=False, ignore_error=False):
 
 
 if __name__ == '__main__':
+    from time import sleep
     @cache
     def test_1():
         pass
@@ -58,9 +60,9 @@ if __name__ == '__main__':
     def test(*args, **kwargs):
         print(test, args, kwargs)
     test(9, z=99)
-    time.sleep(0)
+    sleep(0)
     test(9, z=99)  # cached
-    time.sleep(1)
+    sleep(1)
     test(9, z=99)
 else:
     from sys import modules
