@@ -5,20 +5,32 @@ import functools
 
 def cache(ttl, typed=False, ignore_error=False):
     """Time To Live Cache
+
     Decorator to wrap a function with a memoizing callable that has TTL result
+
+    typed: not implemented now
     """
 
     def wrap(fn):
         from pickle import dumps
         from time import monotonic
-        hash = lambda x: x and dumps(x) or b''
+
+        def _hash(x):
+            if isinstance(x, dict):
+                x = tuple(sorted(x.items()))
+            try:
+                hash(x)
+            except TypeError:
+                x = (dumps(x), )
+            return x
+
         _tmp = {}
 
         @functools.wraps(fn)
         def fn_wrapped(*args, **kwargs):
             result = _tmp  # fake identifier
             now = monotonic()
-            key = hash(args) + hash(kwargs)
+            key = _hash(args) + _hash(kwargs)
             if key in _tmp:
                 cd, result = _tmp[key]
                 if cd > now:
@@ -59,11 +71,11 @@ if __name__ == '__main__':
     @cache(1)
     def test(*args, **kwargs):
         print(test, args, kwargs)
-    test(9, z=99)
+    test(9, z=[99])
     sleep(0)
-    test(9, z=99)  # cached
+    test(9, z=[99])  # cached
     sleep(1)
-    test(9, z=99)
+    test(9, z=[99])
 else:
     from sys import modules
     self = modules[__name__]
