@@ -7,8 +7,6 @@ def cache(ttl, typed=False, ignore_error=False):
     """Time To Live Cache
 
     Decorator to wrap a function with a memoizing callable that has TTL result
-
-    typed: not implemented now
     """
 
     def wrap(fn):
@@ -31,6 +29,8 @@ def cache(ttl, typed=False, ignore_error=False):
             result = _tmp  # fake identifier
             now = monotonic()
             key = _hash(args) + _hash(kwargs)
+            if typed:
+                key += tuple(map(type, args))
             if key in _tmp:
                 cd, result = _tmp[key]
                 if cd > now:

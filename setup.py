@@ -11,7 +11,7 @@ with open("README.md") as f:
 
 setup(
     name=name,
-    version="1.3",
+    version="1.4",
     description="Decorator to wrap a function with a memoizing callable that has TTL result",
     long_description=long_description,
     long_description_content_type="text/markdown",
