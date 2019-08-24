@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import functools
+import random
 
 
-def cache(ttl, typed=False, ignore_error=False):
+def cache(ttl, typed=False, ignore_error=False, random_base=0):
     """Time To Live Cache
 
     Decorator to wrap a function with a memoizing callable that has TTL result
@@ -43,7 +44,8 @@ def cache(ttl, typed=False, ignore_error=False):
                     return result
                 raise  # no previous result in _tmp
 
-            _tmp[key] = now + ttl, result
+            cd = now + ttl + random.random() * random_base
+            _tmp[key] = cd, result
             return result
 
         return fn_wrapped
@@ -68,13 +70,13 @@ if __name__ == '__main__':
     @cache(10, ignore_error=True)
     def test_3():
         pass
-    @cache(1)
+    @cache(1, random_base=1.0)
     def test(*args, **kwargs):
         print(test, args, kwargs)
     test(9, z=[99])
     sleep(0)
     test(9, z=[99])  # cached
-    sleep(1)
+    sleep(1.5)
     test(9, z=[99])
 else:
     from sys import modules
