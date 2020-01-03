@@ -10,9 +10,13 @@ def cache(ttl, typed=False, ignore_error=False, random_base=0):
     Decorator to wrap a function with a memoizing callable that has TTL result
     """
 
+    try:
+        from time import monotonic
+    except ImportError:
+        from time import time as monotonic
+
     def wrap(fn):
         from pickle import dumps
-        from time import monotonic
 
         def _hash(x):
             if isinstance(x, dict):
